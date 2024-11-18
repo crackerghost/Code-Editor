@@ -46,7 +46,7 @@ function Editor() {
   
     // Initialize WebSocket connection
     if (!websocket.current) {
-      websocket.current = new WebSocket(`ws://code-editor-6w2j.vercel.app//emit`);
+        websocket.current = new WebSocket(`wss://code-editor-6w2j.vercel.app/emit`);
     }
   
     const ws = websocket.current;
