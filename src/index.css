@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body{
+  @apply h-screen w-screen  font-inter bg-[#231F20] text-white overflow-x-hidden
+}
+*{
+  @apply p-0 m-0 box-border
+}
+
+body::-webkit-scrollbar{
+  width: 0px;
+}
