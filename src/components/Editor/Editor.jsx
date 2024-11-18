@@ -63,8 +63,7 @@ function Editor() {
     ws.onmessage = (event) => {
         try {
           const receivedMessage = event.data;
-          console.log("Received from server:", receivedMessage);
-      
+         
           isRemoteUpdate.current = true;
       
           const currentCode = editor.getValue();
@@ -99,7 +98,7 @@ function Editor() {
         if (ws.readyState === WebSocket.OPEN) {
           ws.send(JSON.stringify({ code: currentCode, id: parm.id }));
         }
-      }, 1000);
+      }, 200);
 
     // Attach input listener
     const modelContentListener = editor.onDidChangeModelContent(() => {
