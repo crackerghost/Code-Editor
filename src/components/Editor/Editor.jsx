@@ -98,7 +98,7 @@ function Editor() {
         if (ws.readyState === WebSocket.OPEN) {
           ws.send(JSON.stringify({ code: currentCode, id: parm.id }));
         }
-      }, 200);
+      }, 600);
 
     // Attach input listener
     const modelContentListener = editor.onDidChangeModelContent(() => {
