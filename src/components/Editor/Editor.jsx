@@ -21,14 +21,13 @@ function Editor() {
   const parm = useParams();
   const isRemoteUpdate = useRef(false); // Flag to track remote updates
   useEffect(() => {
-
     const debounce = (func, delay) => {
-        let timeout;
-        return (...args) => {
-          clearTimeout(timeout);
-          timeout = setTimeout(() => func(...args), delay);
-        };
+      let timeout;
+      return (...args) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func(...args), delay);
       };
+    };
     // Create Monaco editor instance
     const editor = monaco.editor.create(document.getElementById("editor"), {
       value: "", // Leave it empty until the backend sends the shared state
@@ -41,70 +40,81 @@ function Editor() {
       autoClosingBrackets: "always",
       autoClosingQuotes: "always",
     });
-  
+
     editorRef.current = editor;
-  
+
     // Initialize WebSocket connection
     if (!websocket.current) {
-        websocket.current = new WebSocket(`wss://code-editor-bmq7.onrender.com/emit`);
+      websocket.current = new WebSocket(
+        `wss://code-editor-bmq7.onrender.com/emit`
+      );
     }
-  
+
     const ws = websocket.current;
-  
+
     ws.onopen = () => {
       console.log("WebSocket connection established");
-  
+
       // Send an initial message with `id` to the server
       if (parm.id) {
         ws.send(JSON.stringify({ id: parm.id, code: "" })); // Send only `id` on connect
       }
     };
-  
+
     ws.onmessage = (event) => {
         try {
-          const receivedMessage = event.data;
-         
-          isRemoteUpdate.current = true;
+            const receivedMessage = event.data
+            console.log(receivedMessage)
+          
       
-          const currentCode = editor.getValue();
-          if (currentCode !== receivedMessage) {
-            const currentPosition = editor.getPosition();
-            editor.setValue(receivedMessage);
-            if (currentPosition) {
-              editor.setPosition(currentPosition);
+          // Ensure `receivedMessage` has the expected properties
+          if (receivedMessage !== undefined) {
+              const currentCode = editor.getValue();
+      
+            // Avoid overwriting if the received message matches the current state
+            if (currentCode !== receivedMessage) {
+                 console.log("current",currentCode,"recieve",receivedMessage)
+                 isRemoteUpdate.current = true;
+       
+              // Update editor content without triggering the change event
+              const currentPosition = editor.getPosition();
+              editor.setValue(receivedMessage);
+              if (currentPosition) {
+                editor.setPosition(currentPosition); // Restore cursor position
+              }
+      
+              isRemoteUpdate.current = false;
             }
           }
-      
-          isRemoteUpdate.current = false;
         } catch (error) {
           console.error("Error parsing WebSocket message:", error);
         }
       };
+      
     ws.onerror = (error) => {
       console.error("WebSocket error:", error);
     };
-  
+
     ws.onclose = () => {
       console.log("WebSocket connection closed");
     };
-  
-    // Handle input changes
+
     const handleInput = debounce(() => {
         if (isRemoteUpdate.current) {
-          return;
+          return; // Skip broadcasting if the update is from the server
         }
-      
         const currentCode = editor.getValue();
         if (ws.readyState === WebSocket.OPEN) {
           ws.send(JSON.stringify({ code: currentCode, id: parm.id }));
         }
-      }, 600);
+      }, 1500);
+      
 
     // Attach input listener
     const modelContentListener = editor.onDidChangeModelContent(() => {
       handleInput();
     });
-  
+
     // Cleanup
     return () => {
       modelContentListener.dispose();
@@ -114,7 +124,7 @@ function Editor() {
       }
     };
   }, [parm.id]);
-  
+
   return (
     <>
       <Navbar />
