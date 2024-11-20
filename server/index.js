@@ -34,7 +34,7 @@ const sendCode = (id, code) => {
 
 app.ws("/emit", (ws, req) => {
   console.log("A WebSocket connection has been established.");
-  console.log(ws)
+ 
   const pingInterval = setInterval(() => {
     if (ws.readyState === ws.OPEN) {
       ws.ping(); // Keep the connection alive
@@ -50,7 +50,7 @@ app.ws("/emit", (ws, req) => {
         console.warn("Invalid message format received:", parsedMsg);
         return;
       }
-
+      
       // Add the user connection to the userMap
       userMap.push({ userId: id, socket: ws });
       console.log(`User with ID: ${id} connected. Total connections: ${userMap.length}`);
